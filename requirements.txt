@@ -1,0 +1,10 @@
+pillow 
+opencv-python 
+gunicorn
+numpy
+torch 
+transformers 
+matplotlib
+flask
+keybert
+sentencepiece
