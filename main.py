@@ -28,20 +28,20 @@ def main():
 
 
 		#main frame elements
-		MAIN_label = tk.Label(frame_entry,
+		ENTRY_label = tk.Label(frame_entry,
 				 text="Automatic Question Generation",
 				 font=("Helvetica", 64),
 				 )
 
-		MAIN_label.pack(pady=150)
+		ENTRY_label.pack(pady=150)
 
-		MAIN_button = tk.Button(frame_entry,
+		ENTRY_button = tk.Button(frame_entry,
 					text="Start",
 					font=("Helvetica", 24),
 					width=10,
 					height=2,
 					command=lambda: show_frame(frame_camera))
-		MAIN_button.pack()
+		ENTRY_button.pack()
 
 		#elements for camera frame
 
