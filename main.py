@@ -27,14 +27,15 @@ def main():
 		frame_check = tk.Frame(root)
 
 
-		label = tk.Label(frame_main,
+		#main frame elements
+		MAIN_label = tk.Label(frame_main,
 				 text="Automatic Question Generation",
 				 font=("Helvetica", 64),
 				 )
 
 		label.pack(pady=150)
 
-		button = tk.Button(frame_main, text="Start", font=("Helvetica", 24), width=10, height=2)
+		MAIN_button = tk.Button(frame_main, text="Start", font=("Helvetica", 24), width=10, height=2)
 		button.pack()
 
 
