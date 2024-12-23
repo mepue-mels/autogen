@@ -14,6 +14,17 @@ url = decrypt_url()
 def show_frame(frame):
 	frame.tkraise()
 
+def show_camera_feed(label):
+	ret, frame = cap.read()
+
+	if ret:
+		cv2image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+		img = tk.PhotoImage(data=cv2.imencode('.png', cv2image)[1].tobytes())
+		label.img = img
+		label.config(image=img)
+
+	label.after(10, lambda: show_camera_feed(label))
+
 def main():
 	if connectivity_test(url): #entry point
 
@@ -44,7 +55,6 @@ def main():
 		ENTRY_button.pack()
 
 		#elements for camera frame
-
 
 		#stack the elements from the grid
 		for frame in (frame_entry, frame_camera):
