@@ -15,7 +15,7 @@ def show_frame(frame):
 	frame.tkraise()
 
 def main():
-	if connectivity_test(url):
+	if connectivity_test(url): #entry point
 
 		#main canvas
 		root = tk.Tk()
@@ -23,19 +23,19 @@ def main():
 
 
 		#define the frames here
-		frame_main = tk.Frame(root)
+		frame_entry = tk.Frame(root)
 		frame_camera = tk.Frame(root)
 
 
 		#main frame elements
-		MAIN_label = tk.Label(frame_main,
+		MAIN_label = tk.Label(frame_entry,
 				 text="Automatic Question Generation",
 				 font=("Helvetica", 64),
 				 )
 
 		MAIN_label.pack(pady=150)
 
-		MAIN_button = tk.Button(frame_main,
+		MAIN_button = tk.Button(frame_entry,
 					text="Start",
 					font=("Helvetica", 24),
 					width=10,
@@ -43,9 +43,11 @@ def main():
 					command=lambda: show_frame(frame_camera))
 		MAIN_button.pack()
 
+		#elements for camera frame
+
 
 		#stack the elements from the grid
-		for frame in (frame_main, frame_camera):
+		for frame in (frame_entry, frame_camera):
 			frame.grid(row=0, column=0, sticky="nsew")
 
 
@@ -53,7 +55,7 @@ def main():
 		root.rowconfigure(0, weight=1)
 		root.columnconfigure(0, weight=1)
 
-		show_frame(frame_main)
+		show_frame(frame_entry)
 
 		root.mainloop()
 	else:
