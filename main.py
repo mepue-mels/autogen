@@ -24,7 +24,7 @@ def main():
 
 		#define the frames here
 		frame_main = tk.Frame(root)
-		frame_check = tk.Frame(root)
+		frame_camera = tk.Frame(root)
 
 
 		#main frame elements
@@ -33,14 +33,19 @@ def main():
 				 font=("Helvetica", 64),
 				 )
 
-		label.pack(pady=150)
+		MAIN_label.pack(pady=150)
 
-		MAIN_button = tk.Button(frame_main, text="Start", font=("Helvetica", 24), width=10, height=2)
-		button.pack()
+		MAIN_button = tk.Button(frame_main,
+					text="Start",
+					font=("Helvetica", 24),
+					width=10,
+					height=2,
+					command=lambda: show_frame(frame_camera))
+		MAIN_button.pack()
 
 
 		#stack the elements from the grid
-		for frame in (frame_main, frame_check):
+		for frame in (frame_main, frame_camera):
 			frame.grid(row=0, column=0, sticky="nsew")
 
 
