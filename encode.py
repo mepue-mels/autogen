@@ -50,9 +50,9 @@ def send_image_to_flask(image_base64, url):
 
 
 # Main execution
-if __name__ == "__main__":
+def send():
     # Path to the image
-    image_path = "./second.png"  # Replace with the correct path to your image
+    image_path = "./captured_image.png"  # Replace with the correct path to your image
     # Flask app endpoint URL (adjusted for Cloud Run)
     flask_url = "https://aqg-183264939006.asia-east1.run.app/predict"  # Update to Cloud Run URL
 
