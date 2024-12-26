@@ -1,0 +1,4 @@
+alias env="source ~/Desktop/aqg/src/bin/activate"
+alias dir="cd ~/Desktop/aqg/src"
+alias repo="chromium --new-tab=github.com/mepue-mels/aqg"
+alias deac="deactivate" 

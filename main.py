@@ -1,96 +1,141 @@
-#!/usr/bin/env python3
-
-from flask import Flask, request, jsonify
-from ocr import *
-from model import *
-from aqg import *
-from PIL import Image
-import io
-import os
+from include import *
+from encode import *
+import tkinter as tk
+from PIL import Image, ImageTk
 import cv2
-import base64
-import numpy as np
-import logging
 
-app = Flask(__name__)
-logging.basicConfig(level=logging.ERROR)
+"""
+main.py
 
-def decode_image(image_base64):
-    """
-    Decodes a Base64-encoded image and converts it to an OpenCV-compatible format.
+Serves as the front end (Tkinter) for the app that communicates with the GCP Cloud Run service for the LLM service.
 
-    Args:
-        image_base64 (str): Base64 string of the image.
+Entry point: main()
+"""
 
-    Returns:
-        np.ndarray: Decoded image in OpenCV format (BGR).
-    """
-    try:
-        # Strip the MIME type if included
-        if ',' in image_base64:
-            image_base64 = image_base64.split(',')[1]
+url = decrypt_url()
+cap = None  # Global variable for camera capture
+window_size = 500# Variable to control initial window size
 
-        # Decode Base64 to bytes
-        image_bytes = base64.b64decode(image_base64)
+def show_frame(frame):
+    """Switch to the specified frame and manage the camera lifecycle."""
+    global cap
 
-        # Load the image as a NumPy array (OpenCV format)
-        np_arr = np.frombuffer(image_bytes, np.uint8)
-        image = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
+    if frame == frame_camera:
+        if cap is None:
+            cap = cv2.VideoCapture(0)
+        show_camera_feed(camera_label)
+    else:
+        if cap is not None:
+            cap.release()
+            cap = None
 
-        if image is None:
-            raise ValueError("Decoded image is None.")
-        
-        return image
-    except Exception as e:
-        logging.error(f"Error decoding image: {e}")
-        return None
+    frame.tkraise()
 
-@app.route('/predict', methods=['POST'])
-def predict():
-    """
-    Predict endpoint to process an image and return questions.
-    """
-    try:
-        data = request.get_json()
-        image_base64 = data.get('image')
+def capture_frame():
+	global cap
 
-        if not isinstance(image_base64, str) or not image_base64.startswith("data:image"):
-            return jsonify({'status': 'error', 'message': 'Invalid image format. Provide a Base64-encoded image.'}), 400
+	ret, frame = cap.read()
 
-        # Decode the image to OpenCV format
-        image = decode_image(image_base64)
+	if ret:
+		cv2.imwrite('captured_image.png', frame)
+		send()
 
-        if image is None:
-            return jsonify({'status': 'error', 'message': 'Failed to decode image.'}), 400
+def show_camera_feed(label):
+    """Display the camera feed in the given label."""
+    global cap, window_size
 
-        # Perform OCR
-        text = do_ocr(image)
+    if cap is not None:
+        ret, frame = cap.read()
 
-        # Handle text as a list or string
-        if isinstance(text, list):
-            text = " ".join(text)  # Join list into a single string
-        elif not isinstance(text, str):
-            return jsonify({'status': 'error', 'message': 'Unexpected OCR output format.'}), 500
+        if ret:
+            # Correct color format from BGR to RGB
+            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            height, width, _ = frame.shape
 
-        logging.info(f"Extracted text: {text}")
+            # Resize image based on window size while maintaining aspect ratio
+            scale = window_size / max(width, height)
+            new_width = int(width * scale)
+            new_height = int(height * scale)
+            resized_frame = cv2.resize(frame, (new_width, new_height))
 
-        if not text.strip():
-            return jsonify({'status': 'error', 'message': 'No text extracted from the image.'}), 400
+            # Convert OpenCV image to PIL format
+            img = Image.fromarray(resized_frame)
+            imgtk = ImageTk.PhotoImage(image=img)
 
-        # Process the text to generate keywords and questions
-        kw_array = kw_extract(text)
-        questions = [question for question in perform_aqg(kw_array, text)]
+            label.imgtk = imgtk
+            label.config(image=imgtk)
 
-        return jsonify({'status': 'success', 'prediction': questions})
+        label.after(10, lambda: show_camera_feed(label))
 
-    except Exception as e:
-        logging.error(f"Error processing image: {e}")
-        return jsonify({'status': 'error', 'message': 'An error occurred while processing the image.'}), 500
+def main():
+    if connectivity_test(url):  # Entry point
 
+        # Main canvas
+        root = tk.Tk()
+        root.geometry("1280x720")
 
-@app.route('/health')
-def health():
-    return jsonify({'status': 'healthy'})
+        # Define the frames here
+        global frame_camera, camera_label
+        frame_entry = tk.Frame(root)
+        frame_camera = tk.Frame(root)
 
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 8080)))
+        # Main frame elements
+        ENTRY_label = tk.Label(
+            frame_entry,
+            text="Automatic Question Generation",
+            font=("Helvetica", 64),
+        )
+        ENTRY_label.pack(pady=150)
+
+        ENTRY_button = tk.Button(
+            frame_entry,
+            text="Start",
+            font=("Helvetica", 24),
+            width=10,
+            height=2,
+            command=lambda: show_frame(frame_camera),
+        )
+        ENTRY_button.pack()
+
+        # Elements for camera frame
+        camera_label = tk.Label(frame_camera)
+        camera_label.pack(pady=100)
+
+        BACK_button = tk.Button(
+            frame_camera,
+            text="Back",
+            font=("Helvetica", 24),
+            width=10,
+            height=2,
+            command=lambda: show_frame(frame_entry),
+        )
+        BACK_button.pack()
+
+        CAPTURE_button = tk.Button(
+            frame_camera,
+            text="Capture",
+            font=("Helvetica", 24),
+            width=10,
+            height=2,
+            command=lambda: capture_frame(),
+        )
+
+        CAPTURE_button.pack()
+
+        # Stack the elements from the grid
+        for frame in (frame_entry, frame_camera):
+            frame.grid(row=0, column=0, sticky="nsew")
+
+        # Unrestrict the main canvas for resizing using weights
+        root.rowconfigure(0, weight=1)
+        root.columnconfigure(0, weight=1)
+
+        show_frame(frame_entry)
+
+        root.mainloop()
+    else:
+        print("Error: cloud not active")
+
+# Entry point for window
+if __name__ == "__main__":
+    main()

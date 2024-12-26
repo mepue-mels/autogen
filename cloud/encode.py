@@ -1,6 +1,7 @@
 import base64
 import requests
 import mimetypes
+import sys
 
 def encode_image_to_base64(image_path):
     """
@@ -25,7 +26,6 @@ def encode_image_to_base64(image_path):
         print(f"Error encoding image: {e}")
         return None
 
-
 def send_image_to_flask(image_base64, url):
     """
     Sends a Base64-encoded image to a Flask app via a POST request.
@@ -48,11 +48,14 @@ def send_image_to_flask(image_base64, url):
         print(f"Error sending request to Flask app: {e}")
         return None
 
-
 # Main execution
-def send():
+if __name__ == "__main__":
+    if len(sys.argv) < 2:
+        print("Usage: python script.py <image_path>")
+        sys.exit(1)
+
     # Path to the image
-    image_path = "./captured_image.png"  # Replace with the correct path to your image
+    image_path = sys.argv[1]
     # Flask app endpoint URL (adjusted for Cloud Run)
     flask_url = "https://aqg-183264939006.asia-east1.run.app/predict"  # Update to Cloud Run URL
 

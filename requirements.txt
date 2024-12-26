@@ -1,10 +1,2 @@
-pillow 
-opencv-python 
-gunicorn
-numpy
-torch 
-transformers 
-matplotlib
+tk
 flask
-keybert
-sentencepiece
